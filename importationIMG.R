@@ -34,4 +34,44 @@ display<-function(x){
   }
 }
 
-display(img10)
+display(img100)
+display(img50)
+img100[1,1,]
+hist(img50)#représente le taux de blanc sur l'image
+# install.packages("class")
+require(class)
+##exemple knn :
+##https://rstudio-pubs-static.s3.amazonaws.com/123438_3b9052ed40ec4cd2854b72d1aa154df9.html
+
+
+
+
+####Partie codage à revoir ensemble####
+
+
+##knn sur 10% de blanc
+# nonblanc<-array(img10[img10[,,1]!=1&img10[,,2]!=1&img10[,,3]!=1],
+                # c(length(img10[img10[,,1]!=1&img10[,,2]!=1&img10[,,3]!=1])/6,2,3))
+
+nonbruit<-img10==img100
+bruit<-img10!=img100
+
+train.gc<-data.frame(matrix(img10[nonbruit],ncol = 3,byrow = TRUE))
+train.def<-as.factor(1:nrow(train.gc))#ou alors paste0 les 3 quantités de chaque pixel
+dim(train.def)
+test.gc<-data.frame(matrix(img10[bruit],ncol = 3,byrow = TRUE))#refaire cette ligne
+
+test.def<-matrix(img100[bruit],ncol = 3,byrow = TRUE)
+dim(test.gc)
+
+knn.3<-knn(train = train.gc,test = test.gc,cl = train.def,k = 3)
+knn.3
+dim(train.gc)
+
+
+
+
+
+
+
+
