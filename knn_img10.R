@@ -1,15 +1,7 @@
-train <- rbind(iris3[1:25,,1], iris3[1:25,,2], iris3[1:25,,3])
-test <- rbind(iris3[26:50,,1], iris3[26:50,,2], iris3[26:50,,3])
-cl <- factor(c(rep("s",25), rep("c",25), rep("v",25)))
-gg<-knn(train, test, cl, k = 3, prob=TRUE)
-
-
-install.packages("imager")
-require(imager)
-
 nonbruit<-img10==img100
 bruit<-img10!=img100
 img10[1,2,]
+img10new<-img10
 
 don<-NULL
 #création nv jeux de données
@@ -41,15 +33,37 @@ classe2<-cl(img10)
 nonbruit<-classe==classe2
 bruit<-classe!=classe2
 
+#création des train test et classes
 train.gc<-cbind(don$x[nonbruit],don$y[nonbruit])
 test.gc<-cbind(don$x[bruit],don$y[bruit])
 cl<-classe2[nonbruit]
 
+#algo knn
 require(class)
 res.knn<-knn(train = train.gc,test = test.gc,cl = cl,k = 3)
 summary(res.knn)
 
 don$classe<-classe2
 don<-data.frame(don)
-don[don$classe!=classe,]<-res.knn
+
+#mise en forme des classes
+qq<-strsplit(sapply(res.knn,as.character),"_")
+ee<-data.frame(matrix(unlist(qq),nrow = length(qq),ncol = 3,byrow = TRUE))
+ee$X1<-sapply(sapply(ee$X1,paste),as.numeric)
+ee$X2<-sapply(sapply(ee$X3,paste),as.numeric)
+ee$X3<-sapply(sapply(ee$X3,paste),as.numeric)
+
+#remplacement donnée rgb
+don$r[don$classe!=classe]<-ee[,1]
+don$g[don$classe!=classe]<-ee[,2]
+don$b[don$classe!=classe]<-ee[,3]
+
+#reconstitution image pour display
+img10new[,,1]<-matrix(don$r,nrow = 256,byrow = TRUE)
+img10new[,,2]<-matrix(don$g,nrow = 256,byrow = TRUE)
+img10new[,,3]<-matrix(don$b,nrow = 256,byrow = TRUE)
+display(img10)
+display(img100)
+display(img10new)
+
 
