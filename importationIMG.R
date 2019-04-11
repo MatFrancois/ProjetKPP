@@ -1,5 +1,5 @@
 #### Packages nécessaires ####
-#install.packages("png")
+# install.packages("png")
 require(png)
 
 #### Importation images ####
