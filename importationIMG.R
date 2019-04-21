@@ -1,7 +1,7 @@
 #### Packages nécessaires ####
 # install.packages("png")
 require(png)
-
+require(class)
 #### Importation images ####
 
 #image complète

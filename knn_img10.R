@@ -32,11 +32,10 @@ g.cl<-don10$g[nonbruit]
 b.cl<-don10$b[nonbruit]
 
 #algo knn *3
-require(class)
-res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = 3)
-# summary(res.knn)
-res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = 3)
-res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = 3)
+
+res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = 1)
+res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = 1)
+res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = 1)
 
 # #remplacement donnée rgb
 don10$r[bruit]<-as.numeric(paste(res.r))
@@ -51,22 +50,30 @@ display(img10)
 display(img100)
 display(img10new)
 
+mse.rk<-mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit])**2)
+mse.gk<-mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit])**2)
+mse.bk<-mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit])**2)
+
+
 ######
 ######variation de K pour chaque r / g / b
-mse.r<-NULL
-mse.g<-NULL
-mse.b<-NULL
-for (i in c(1:5,10,20,30)){
+mse.r10<-NULL
+mse.g10<-NULL
+mse.b10<-NULL
+for (i in c(1:10)){
   res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = i)
-  mse.r<-c(mse.r,mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit])**2))
+  mse.r10<-c(mse.r10,mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit])**2))
   res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = i)
-  mse.g<-c(mse.g,mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit])**2))
+  mse.g10<-c(mse.g10,mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit])**2))
   res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = i)
-  mse.b<-c(mse.b,mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit])**2))
+  mse.b10<-c(mse.b10,mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit])**2))
   print(i)
-}
+}#plus K augmente plus le MSE augmente
 
+plot(mse.r10,col="red",type="b",ylim = c(min(c(mse.r10,mse.b10,mse.g10)),max(c(mse.r10,mse.b10,mse.g10))))
+lines(mse.g10,col="green",type="b")
+lines(mse.b10,col="blue",type="b")
+#meilleur k : 1
 
-
-
+##Vu que le meilleur k général semble etre 1, on fait l'imputation par k=1 pour chaque image et compare ensuite le MSE de chacun
 
