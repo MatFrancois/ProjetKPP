@@ -72,6 +72,7 @@ for (i in c(1:10)){
 plot(mse.r50,col="red",type="b",ylim = c(min(c(mse.r50,mse.b50,mse.g50)),max(c(mse.r50,mse.b50,mse.g50))))
 lines(mse.g50,col="green",type="b")
 lines(mse.b50,col="blue",type="b")
+
 #meilleur K : 
 # r : 1
 # b : 1
