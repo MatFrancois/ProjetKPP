@@ -33,9 +33,9 @@ b.cl<-don10$b[nonbruit]
 
 #algo knn *3
 
-res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = 1)
-res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = 1)
-res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = 1)
+res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = 2)
+res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = 2)
+res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = 2)
 
 # #remplacement donnée rgb
 don10$r[bruit]<-as.numeric(paste(res.r))
@@ -49,6 +49,10 @@ img10new[,,3]<-matrix(don10$b,nrow = 256,byrow = TRUE)
 display(img10)
 display(img100)
 display(img10new)
+
+res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = 1)
+res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = 1)
+res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = 1)
 
 mse.rk<-mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit])**2)
 mse.gk<-mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit])**2)
