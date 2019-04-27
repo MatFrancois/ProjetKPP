@@ -2,13 +2,17 @@
 title: "Rapport Projet 2"
 author: "Lucas Chabeau - Matthieu François - Etienne Hamard"
 date: "22 avril 2019"
+header-includes: #allows you to add in your own Latex packages
+- \usepackage{float} #use the 'float' package
+- \floatplacement{figure}{H} #make every figure with caption = h
+
 output:
   pdf_document:
     toc: true
     fig_caption: yes
 ---
 
-```{r}
+```{r echo=FALSE,warning=FALSE,include=FALSE}
 load(".RData")
 require(class)
 require(ggplot2)
@@ -17,50 +21,89 @@ require(ggplot2)
 
 #Introduction
 
-Dans le cadre du cours d'Analyse de données 2, nous nous sommes penchés sur la réalisation d'un projet concernant la restauration d'image. Cela avec la méthode des k plus proches voisins (knn). L'étude met à disposition une image déclinés en 4 versions. Une version complète, une version avec 10% de valeur manquante, une avec 20% et enfin une avec 50%. Les images sont composés de 3 jeux données, le pourcentage de vert, de bleu et de rouge. Afin de réaliser l'algorithme des knn nous avons choisis de modifier un peu ces jeux de données. Par image nous avons réalisé trois knn, un par couleur, afin d'avoir un résultats plus précis. Il a donc extraire des trois images, les valeurs R, G et B pour les transofrmer en trois jeux de données différents, comportant la coordonnée x, et y associée.
+Dans le cadre du cours d'Analyse de données 2, nous nous sommes penchés sur la réalisation d'un projet concernant la restauration d'image. Cela avec la méthode des k plus proches voisins (knn). L'étude met à disposition une image déclinés en 4 versions. Une version complète, une version avec 10% de valeur manquante, une avec 20% et enfin une avec 50%. Les images sont composés de 3 jeux données, le pourcentage de vert, de bleu et de rouge. Afin de réaliser l'algorithme des knn nous avons choisis de modifier un peu ces jeux de données. Par image nous avons réalisé trois knn, un par couleur, afin d'avoir un résultats plus précis. Il a donc extraire des trois images, les valeurs R, G et B pour les transformer en trois jeux de données différents, comportant la coordonnée x, et y associée.
 
-#Impact du choix du nombre de voisins K
+#1. Etude de l'image avec 10% de bruit
 
-Le choix le plus important dans l'algorithme des k plus proches voisins est le nombre de voisins K sur lesquels s'appuyer pour prédir la classe des individus concernés choisir. La présence de l'image originale nous permet donc de calculer la précision que peut avoir l'algorithme pour chaque K. Pour cela nous avons utilisé le Mean Squared Error (MSE).
+Le choix le plus important dans l'algorithme des k plus proches voisins est le nombre de voisins K sur lesquels s'appuyer pour prédir la classe des individus concernés choisir. La présence de l'image originale nous permet donc de calculer la précision que peut avoir l'algorithme pour chaque K. Pour cela nous avons utilisé le Mean Squared Error (MSE), étant donné qu'il n'est pas possible ne comparer combien de pixel sont similaires à l'originale vu que nous avons divisé la restauration de ceux ci en 3 (1 par couleur).
 
-```{r fig.height= 2, fig.cap="Evolution du MSE par couleur par image"}
+```{r fig.height=3,fig.width=10,echo=FALSE}
 par(mfrow=c(1,3))
+display(img100)
+display(img10)
+display(img10new)
+```
+
+A première vu la restauration est efficace, l'image est proche de l'originale. Afin d'étudier l'impact du choix de K sur la précision de la reconstitution de l'image, nous avons fait tourner plusieurs algorithmes knn avec un k allant de 1 à 10. 
+
+```{r fig.height=5,fig.width=7,echo=FALSE, fig.cap="Evolution du MSE par couleur pour l'image avec 10% de bruit"}
+par(mfrow=c(1,1))
 #10%
 plot(mse.r10,col="red",type="b",ylim = c(min(c(mse.r10,mse.b10,mse.g10)),max(c(mse.r10,mse.b10,mse.g10))))
 lines(mse.g10,col="green",type="b")
 lines(mse.b10,col="blue",type="b")
+```
 
+On peut voir que l'évolution du MSE pour les couleurs rouge et verte est très proche, le K idéal semble être k=2. Alors que pour la couleur bleue il s'agirait plus de k=1 ou 3.
+\newpage
+#2. Etude de l'image avec 20% de bruit
+
+```{r fig.height=3,fig.width=10,echo=FALSE}
+par(mfrow=c(1,3))
+display(img100)
+display(img20)
+display(img20new)
+```
+
+A nouveau l'algorithme des knn avec k=1 semble efficace mais une étude de l'impact de K sur son efficacité est intéressante.
+
+```{r fig.height=5,fig.width=7,echo=FALSE, fig.cap="Evolution du MSE par couleur pour l'image avec 20% de bruit"}
 ##20%
 plot(mse.r20,col="red",type="b",ylim = c(min(c(mse.r20,mse.b20,mse.g20)),max(c(mse.r20,mse.b20,mse.g20))))
 lines(mse.g20,col="green",type="b")
 lines(mse.b20,col="blue",type="b")
-
-#50%
-plot(mse.r50,col="red",type="b",ylim = c(min(c(mse.r50,mse.b50,mse.g50)),max(c(mse.r50,mse.b50,mse.g50))))
-lines(mse.g50,col="green",type="b")
-lines(mse.b50,col="blue",type="b")
-
 ```
 
-Ces trois graphes permettent de montrer l'évolution du MSE en fonction du nombre de K voisins choisis. On peut voir nettement que plus l'image a un bruit important, plus le nombre de K voisins choisis pour l'algorithme des knn doit être faible ou le MSE n'en sera que plus grand. On peut voir que l'évolution du MSE de l'image avec 20% de bruit n'a pas la même évolution quasi-linéaire que l'image avec 50% de bruit, mais elle n'en est pas loin. Alors que pour l'image avec 10% de bruit, le choix d'utiliser qu'un seul voisin comme K n'est pas toujours le meilleur.
+A nouveau, seule la couleur bleue est quasi-linéaire, les couleurs rouge et verte sont les plus proches de la réalité lorsque k = 2 (ou 3 pour le rouge). Alors que pour la couleur bleue, plus K est élevé, plus l'erreur est grande.
+\newpage
+#3. Etude de l'image avec 50% de bruit
 
-Nous avons donc choisis d'utiliser K = 1 pour les 3 images à reconstruire, étant donné qu'il s'agit du plus favorable aux 3 images réunis.
-
-```{r}
-par(mfrow=c(3,2))
-display(img10)
-display(img10new)
-display(img20)
-display(img20new)
+```{r fig.height=3,fig.width=10,echo=FALSE}
+par(mfrow=c(1,3))
+display(img100)
 display(img50)
 display(img50new)
 ```
 
-#Impact du bruit sur l'efficacité de K
+Enfin sur cette dernière image, on voit clairement que l'image de droite n'est pas d'origine, mais lorsqu'on la compare avec l'image centrale, bruitée, l'algorithme parait très efficace vu le résultat qu'il permet d'obtenir.
 
-Enfin d'étudier l'impact du bruit sur le MSE en fonction de K fixé, nous avons choisis comme précédemment K = 1 étant donné qu'il s'agit du K entrainant le MSE minimal dans le plus de cas possible (2/3).
+```{r fig.height=5,fig.width=7,echo=FALSE, fig.cap="Evolution du MSE par couleur pour l'image avec 50% de bruit"}
+#50%
+plot(mse.r50,col="red",type="b",ylim = c(min(c(mse.r50,mse.b50,mse.g50)),max(c(mse.r50,mse.b50,mse.g50))))
+lines(mse.g50,col="green",type="b")
+lines(mse.b50,col="blue",type="b")
+```
 
-```{r fig.cap="MSE par couleur et par image pour K=1"}
+Cette fois ci l'évolution des MSE des trois couleurs se suivent beaucoup plus. L'erreur est minimale lorsque k=1, plus k augmente, plus l'erreur augmente aussi. 
+Ces trois graphes auront donc permis de montrer l'évolution du MSE en fonction du nombre de K voisins choisis. On peut voir nettement que plus l'image a un bruit important, plus le nombre de K voisins choisis pour l'algorithme des knn doit être faible ou le MSE n'en sera que plus grand. On peut voir que l'évolution du MSE de l'image avec 20% de bruit n'a pas la même évolution quasi-linéaire que l'image avec 50% de bruit, mais elle n'en est pas loin. Alors que pour l'image avec 10% de bruit, le choix d'utiliser qu'un seul voisin comme K n'est pas toujours le meilleur.
+
+Nous avons donc choisis d'utiliser K = 1 pour les 3 images à reconstruire, étant donné qu'il s'agit du plus favorable aux 3 images réunis. Et obtenons les résultats suivants :
+
+<!-- ```{r echo=FALSE} -->
+<!-- par(mfrow=c(3,2)) -->
+<!-- display(img10) -->
+<!-- display(img10new) -->
+<!-- display(img20) -->
+<!-- display(img20new) -->
+<!-- display(img50) -->
+<!-- display(img50new) -->
+<!-- ``` -->
+
+#4. Impact du bruit sur l'efficacité de K
+
+Enfin d'étudier l'impact du bruit sur le MSE en fonction de K fixé, nous avons choisis comme dit précédemment K = 1, étant donné qu'il s'agit du K entrainant le MSE minimal dans le plus de cas possible (2/3).
+
+```{r echo=FALSE,fig.cap="MSE par couleur et par image pour K=1"}
 ggplot(df.mse,aes(x = image,y = mse,fill=couleur))+
   geom_bar(position = "dodge", stat = "identity") + 
   scale_fill_manual(values=c("#3F93E8","#FF4F4A","#B8FF4F"))
@@ -68,11 +111,299 @@ ggplot(df.mse,aes(x = image,y = mse,fill=couleur))+
 
 Le graphe précédent permet de voir que pour K=1 les MSE des trois images sont très proches malgré le bruit allant de 10 à 50%. De plus pour on aurait pu s'attendre à un MSE croissant, suivant le pourcentage de bruit. Pourtant l'image avec 10% de bruit, à un MSE concernant la couleur verte qui est supérieur au deux autres images. Cela montre que certaines couleur sont plus ou moins affectées pas le bruit. Le choix de K=1 n'étant pas optimal pour l'image à 10% justifie aussi cette différence.
 
-```{r}
+```{r echo=FALSE}
 # require(knitr)
 by(df.mse$mse,df.mse$image,sum)
 ```
 En sommant les erreurs de chaque image on voit que l'image avec 50% d'erreur arrive quand même en tête, toutefois l'image avec 20% est loin derrière. 
 
 #Conclusion
+L'étude a permis de voir l'efficacité de la méthode des k plus proches voisins pour la restauration d'image, à l'oeil nu, lorsqu'il manque peut de pixel (environ 10%), la différence entre l'originale et la restaurée est faible. Au-delà on remarque la différence mais le résultat reste très acceptable. On peut voir par contre que le résultat à l'oeil nu est très loin de la réalité, en moyenne l'image à 10% est moins bien reconstituée que les images avec un pourcentage de bruit plus élevé. Cela montre peut être une des limites du MSE, qui serait de comparer des moyennes faites sur des effectifs différents. Le choix du nombre de voisins K est donc très important, même si on remarque que plus le nombre d'individus à prédire est important, plus K tant à être optimal en 1.
+
+#Annexe 
+
+```{r echo=TRUE,include=FALSE}
+require(png)
+require(class)
+#### Importation images ####
+
+#image complète
+img100 <- readPNG("images/StarWars.png")
+
+#images incomplètes
+img10<- readPNG("images/Image10pourcent.png")
+img20<- readPNG("images/Image20pourcent.png")
+img50<- readPNG("images/Image50pourcent.png")
+
+#Affichage images
+display<-function(x){
+  imageList<-list(x)
+  totalWidth<-0
+  maxHeight<-0
+  for (img in imageList){
+    if(is.character(img))
+      img<-readPNG(img)
+    dimg<-dim(img)
+    totalWidth<-totalWidth+dimg[2]
+    maxHeight<-max(maxHeight,dimg[1])
+  }
+  par(mar=c(0,0,0,0))
+  plot(c(0,totalWidth),c(0,maxHeight),type="n",asp=1,xaxt="n",yaxt="n",xlab="x",ylab="y")
+  offset<-0
+  for (img in imageList){
+    dimg<-dim(img)
+    rasterImage(img,offset,0,offset+dimg[2],dimg[1])
+    offset<-offset+dimg[2]
+  }
+}
+
+
+##IMAGE 10%
+img10new<-img10
+
+# don<-NULL
+# #création nv jeux de données
+# for (i in 1:256){
+#   for(j in 1:256){
+#     don$x<-c(don$x,i)
+#     don$y<-c(don$y,j)
+#     don$r<-c(don$r,img10[i,j,1])
+#     don$g<-c(don$g,img10[i,j,2])
+#     don$b<-c(don$b,img10[i,j,3])
+#   }
+# }
+
+load("don10.Rdata")
+
+
+####partage de l'image en manquant / no nmanquant
+nonbruit<-don10$r==c(t(img100[,,1]))
+bruit<-don10$r!=c(t(img100[,,1]))
+
+#création des train test et classes
+train.gc<-cbind(don10$x[nonbruit],don10$y[nonbruit])
+test.gc<-cbind(don10$x[bruit],don10$y[bruit])
+
+#3 algo knn : 1 par couleur
+#r :
+r.cl<-don10$r[nonbruit]
+#g :
+g.cl<-don10$g[nonbruit]
+#b : 
+b.cl<-don10$b[nonbruit]
+
+#algo knn *3
+
+res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = 1)
+res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = 1)
+res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = 1)
+
+# #remplacement donnée rgb
+don10$r[bruit]<-as.numeric(paste(res.r))
+don10$g[bruit]<-as.numeric(paste(res.g))
+don10$b[bruit]<-as.numeric(paste(res.b))
+
+#reconstitution image pour display
+img10new[,,1]<-matrix(don10$r,nrow = 256,byrow = TRUE)
+img10new[,,2]<-matrix(don10$g,nrow = 256,byrow = TRUE)
+img10new[,,3]<-matrix(don10$b,nrow = 256,byrow = TRUE)
+display(img10)
+display(img100)
+display(img10new)
+
+mse.rk<-mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit])**2)
+mse.gk<-mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit])**2)
+mse.bk<-mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit])**2)
+
+
+######
+######variation de K pour chaque r / g / b
+mse.r10<-NULL
+mse.g10<-NULL
+mse.b10<-NULL
+for (i in c(1:10)){
+  res.r<-knn(train = train.gc,test = test.gc,cl = r.cl,k = i)
+  mse.r10<-c(mse.r10,mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit])**2))
+  res.g<-knn(train = train.gc,test = test.gc,cl = g.cl,k = i)
+  mse.g10<-c(mse.g10,mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit])**2))
+  res.b<-knn(train = train.gc,test = test.gc,cl = b.cl,k = i)
+  mse.b10<-c(mse.b10,mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit])**2))
+  print(i)
+}#plus K augmente plus le MSE augmente
+
+plot(mse.r10,col="red",type="b",ylim = c(min(c(mse.r10,mse.b10,mse.g10)),max(c(mse.r10,mse.b10,mse.g10))))
+lines(mse.g10,col="green",type="b")
+lines(mse.b10,col="blue",type="b")
+
+##Vu que le meilleur k général semble etre 1, on fait l'imputation par k=1 pour chaque image et compare ensuite le MSE de chacun
+
+##IMAGE20%
+
+img20new<-img20
+
+# don<-NULL
+# #création nv jeux de données
+# for (i in 1:256){
+#   for(j in 1:256){
+#     don$x<-c(don$x,i)
+#     don$y<-c(don$y,j)
+#     don$r<-c(don$r,img20[i,j,1])
+#     don$g<-c(don$g,img20[i,j,2])
+#     don$b<-c(don$b,img20[i,j,3])
+#   }
+# }
+
+load("don20.Rdata")
+
+####partage de l'image en manquant / no nmanquant
+nonbruit20<-don20$r==c(t(img100[,,1]))
+bruit20<-don20$r!=c(t(img100[,,1]))
+
+#3 algo knn : 1 par couleur
+#r :
+r.cl20<-don20$r[nonbruit20]
+#g :
+g.cl20<-don20$g[nonbruit20]
+#b : 
+b.cl20<-don20$b[nonbruit20]
+
+#création des train test et classes
+train.gc20<-cbind(don20$x[nonbruit20],don20$y[nonbruit20])
+test.gc20<-cbind(don20$x[bruit20],don20$y[bruit20])
+
+#algo knn
+require(class)
+res.r<-knn(train = train.gc20,test = test.gc20,cl = r.cl20,k = 1)
+res.g<-knn(train = train.gc20,test = test.gc20,cl = g.cl20,k = 1)
+res.b<-knn(train = train.gc20,test = test.gc20,cl = b.cl20,k = 1)
+
+
+#remplacement donnée rgb
+don20$r[bruit20]<-as.numeric(paste(res.r))
+don20$g[bruit20]<-as.numeric(paste(res.g))
+don20$b[bruit20]<-as.numeric(paste(res.b))
+
+#reconstitution image pour display
+img20new[,,1]<-matrix(don20$r,nrow = 256,byrow = TRUE)
+img20new[,,2]<-matrix(don20$g,nrow = 256,byrow = TRUE)
+img20new[,,3]<-matrix(don20$b,nrow = 256,byrow = TRUE)
+display(img20)
+display(img20new)
+display(img100)
+
+#calcul mse
+mse.rk2<-mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit20])**2)
+mse.gk2<-mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit20])**2)
+mse.bk2<-mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit20])**2)
+
+#####img20
+
+######
+######variation de K pour chaque r / g / b
+mse.r20<-NULL
+mse.g20<-NULL
+mse.b20<-NULL
+for (i in c(1:10)){
+  res.r<-knn(train = train.gc20,test = test.gc20,cl = r.cl20,k = i)
+  mse.r20<-c(mse.r20,mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit20])**2))
+  res.g<-knn(train = train.gc20,test = test.gc20,cl = g.cl20,k = i)
+  mse.g20<-c(mse.g20,mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit20])**2))
+  res.b<-knn(train = train.gc20,test = test.gc20,cl = b.cl20,k = i)
+  mse.b20<-c(mse.b20,mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit20])**2))
+  print(i)
+}
+
+plot(mse.r20,col="red",type="b",ylim = c(min(c(mse.r20,mse.b20,mse.g20)),max(c(mse.r20,mse.b20,mse.g20))))
+lines(mse.g20,col="green",type="b")
+lines(mse.b20,col="blue",type="b")
+
+
+##IMAGE 50%
+img50new<-img50
+
+# don<-NULL
+# #création nv jeux de données
+# for (i in 1:256){
+#   for(j in 1:256){
+#     don$x<-c(don$x,i)
+#     don$y<-c(don$y,j)
+#     don$r<-c(don$r,img50[i,j,1])
+#     don$g<-c(don$g,img50[i,j,2])
+#     don$b<-c(don$b,img50[i,j,3])
+#   }
+# }
+load("don50.Rdata")
+
+####partage de l'image en manquant / no nmanquant
+nonbruit50<-don50$r==c(t(img100[,,1]))
+bruit50<-don50$r!=c(t(img100[,,1]))
+
+#création des train test et classes
+train.gc50<-cbind(don50$x[nonbruit50],don50$y[nonbruit50])
+test.gc50<-cbind(don50$x[bruit50],don50$y[bruit50])
+
+#3 algo knn : 1 par couleur
+#r :
+r.cl50<-don50$r[nonbruit50]
+#g :
+g.cl50<-don50$g[nonbruit50]
+#b : 
+b.cl50<-don50$b[nonbruit50]
+
+#algo knn
+require(class)
+res.r<-knn(train = train.gc50,test = test.gc50,cl = r.cl50,k = 1)
+res.g<-knn(train = train.gc50,test = test.gc50,cl = g.cl50,k = 1)
+res.b<-knn(train = train.gc50,test = test.gc50,cl = b.cl50,k = 1)
+
+#remplacement donnée rgb
+don50$r[bruit50]<-as.numeric(paste(res.r))
+don50$g[bruit50]<-as.numeric(paste(res.g))
+don50$b[bruit50]<-as.numeric(paste(res.b))
+
+#reconstitution image pour display
+img50new[,,1]<-matrix(don50$r,nrow = 256,byrow = TRUE)
+img50new[,,2]<-matrix(don50$g,nrow = 256,byrow = TRUE)
+img50new[,,3]<-matrix(don50$b,nrow = 256,byrow = TRUE)
+display(img50)
+display(img50new)
+display(img100)
+
+#calcul mse
+mse.rk5<-mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit50])**2)
+mse.gk5<-mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit50])**2)
+mse.bk5<-mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit50])**2)
+
+#####img50
+######
+######variation de K pour chaque r / g / b
+mse.r50<-NULL
+mse.g50<-NULL
+mse.b50<-NULL
+for (i in c(1:10)){
+  res.r<-knn(train = train.gc50,test = test.gc50,cl = r.cl50,k = i)
+  mse.r50<-c(mse.r50,mean((as.numeric(paste(res.r))-c(t(img100[,,1]))[bruit50])**2))
+  res.g<-knn(train = train.gc50,test = test.gc50,cl = g.cl50,k = i)
+  mse.g50<-c(mse.g50,mean((as.numeric(paste(res.g))-c(t(img100[,,2]))[bruit50])**2))
+  res.b<-knn(train = train.gc50,test = test.gc50,cl = b.cl50,k = i)
+  mse.b50<-c(mse.b50,mean((as.numeric(paste(res.b))-c(t(img100[,,3]))[bruit50])**2))
+  print(i)
+}
+
+plot(mse.r50,col="red",type="b",ylim = c(min(c(mse.r50,mse.b50,mse.g50)),max(c(mse.r50,mse.b50,mse.g50))))
+lines(mse.g50,col="green",type="b")
+lines(mse.b50,col="blue",type="b")
+
+##comparaison des mse / images
+df.mse<-data.frame(mse=rbind(mse.rk,mse.gk,mse.bk,mse.rk2,mse.gk2,mse.bk2,mse.rk5,mse.gk5,mse.bk5))
+df.mse$couleur<-rep(c("rouge","vert","bleu"),3)
+df.mse$image<-sort(rep(c("image10","image20","image50"),3))
+
+ggplot(df.mse,aes(x = image,y = mse,fill=couleur))+
+  geom_bar(position = "dodge", stat = "identity") + 
+  scale_fill_manual(values=c("#3F93E8","#FF4F4A","#B8FF4F"))
+
+
+
+```
 
